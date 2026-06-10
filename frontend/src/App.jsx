@@ -41,7 +41,7 @@ export default function App() {
 
   // API URL Settings & Health Check
   const [showSettings, setShowSettings] = useState(false);
-  const [backendUrl, setBackendUrl] = useState(localStorage.getItem('backend_api_url') || 'https://compressor-and-convertor-backend.onrender.com');
+  const [backendUrl, setBackendUrl] = useState(localStorage.getItem('backend_api_url') || 'https://compressor-and-convertor.onrender.com');
   const [serverStatus, setServerStatus] = useState('checking');
 
   const getApiBaseUrl = () => {
@@ -50,7 +50,7 @@ export default function App() {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return '';
     }
-    return 'https://compressor-and-convertor-backend.onrender.com';
+    return 'https://compressor-and-convertor.onrender.com';
   };
 
   useEffect(() => {
@@ -1133,7 +1133,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => {
-                    setBackendUrl('https://compressor-and-convertor-backend.onrender.com');
+                    setBackendUrl('https://compressor-and-convertor.onrender.com');
                     localStorage.removeItem('backend_api_url');
                     setShowSettings(false);
                   }}
