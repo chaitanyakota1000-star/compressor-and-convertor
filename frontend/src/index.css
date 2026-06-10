@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Custom utility styles for premium glassmorphism and background grids */
+
+.glass {
+  background: rgba(9, 13, 22, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-hover:hover {
+  background: rgba(9, 13, 22, 0.85);
+  border-color: rgba(0, 242, 254, 0.3);
+  box-shadow: 0 0 25px rgba(0, 242, 254, 0.1);
+}
+
+/* Dynamic dot grid pattern background */
+.bg-grid-pattern {
+  background-size: 30px 30px;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Custom scrollbar to match the modern dark theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.45);
+}
