@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/compressor-and-convertor/',
   plugins: [
     react(),
     tailwindcss(),
