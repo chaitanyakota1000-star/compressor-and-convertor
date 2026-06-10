@@ -74,3 +74,23 @@ To run the automated API integration tests:
    venv\Scripts\python.exe test_compress.py
    ```
    This will execute the test suite via `pytest` and output the results.
+
+---
+
+## Deployment & Hosting
+
+### 1. Frontend (GitHub Pages)
+The frontend is deployed to GitHub Pages and is live at:
+[https://chaitanyakota1000-star.github.io/compressor-and-convertor/](https://chaitanyakota1000-star.github.io/compressor-and-convertor/)
+
+### 2. Backend (Render - Free Tier)
+To deploy the Python FastAPI backend to Render with a single click, click the button below:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/chaitanyakota1000-star/compressor-and-convertor)
+
+Clicking this button will:
+1. Open Render's Blueprint setup page.
+2. Automatically configure the service name, python runtime environment, build commands, and startup files using the `render.yaml` configuration.
+3. Once the deployment completes, copy your backend's URL (e.g. `https://compressor-and-convertor-backend.onrender.com`).
+4. Open your live frontend app link, click the **Gear Settings** icon in the header, paste the URL, and click **Save Changes**!
+
