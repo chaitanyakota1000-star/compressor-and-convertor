@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+env/
+dist/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Temporary upload and compression storage
+backend/temp_uploads/*
+backend/temp_compressed/*
+!backend/temp_uploads/.gitkeep
+!backend/temp_compressed/.gitkeep
+
+# Environment variables
+.env
+.env.local
+
+# OS Files
+.DS_Store
+Thumbs.db
