@@ -16,7 +16,8 @@ import {
   Mail,
   LogOut,
   UserCheck,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Settings
 } from 'lucide-react';
 
 const formatSize = (bytes) => {
@@ -37,6 +38,44 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [authSuccess, setAuthSuccess] = useState(null);
+
+  // API URL Settings & Health Check
+  const [showSettings, setShowSettings] = useState(false);
+  const [backendUrl, setBackendUrl] = useState(localStorage.getItem('backend_api_url') || 'https://compressor-and-convertor-backend.onrender.com');
+  const [serverStatus, setServerStatus] = useState('checking');
+
+  const getApiBaseUrl = () => {
+    const saved = localStorage.getItem('backend_api_url');
+    if (saved) return saved;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return '';
+    }
+    return 'https://compressor-and-convertor-backend.onrender.com';
+  };
+
+  useEffect(() => {
+    let active = true;
+    const checkServer = async () => {
+      setServerStatus('checking');
+      const baseUrl = getApiBaseUrl() || 'http://127.0.0.1:8000';
+      try {
+        const res = await axios.get(`${baseUrl}/`, { timeout: 8000 });
+        if (active) {
+          if (res.data && res.data.status === 'healthy') {
+            setServerStatus('online');
+          } else {
+            setServerStatus('offline');
+          }
+        }
+      } catch (err) {
+        if (active) {
+          setServerStatus('offline');
+        }
+      }
+    };
+    checkServer();
+    return () => { active = false; };
+  }, [backendUrl]);
 
   // Compressor State
   const [files, setFiles] = useState([]);
@@ -159,7 +198,7 @@ export default function App() {
 
     try {
       if (authTab === 'signup') {
-        const response = await axios.post('/api/signup', {
+        const response = await axios.post(`${getApiBaseUrl()}/api/signup`, {
           email: emailInput,
           password: passwordInput
         });
@@ -167,7 +206,7 @@ export default function App() {
         setAuthTab('login');
         setPasswordInput('');
       } else {
-        const response = await axios.post('/api/login', {
+        const response = await axios.post(`${getApiBaseUrl()}/api/login`, {
           email: emailInput,
           password: passwordInput
         });
@@ -198,7 +237,7 @@ export default function App() {
     formData.append('file', fileItem.file);
 
     try {
-      const response = await axios.post('/api/upload', formData, {
+      const response = await axios.post(`${getApiBaseUrl()}/api/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -245,7 +284,7 @@ export default function App() {
       
       if (conversionType !== '') {
         // Run conversion endpoint
-        const convertResponse = await axios.post('/api/convert', {
+        const convertResponse = await axios.post(`${getApiBaseUrl()}/api/convert`, {
           file_ids: backendIds,
           conversion_type: conversionType,
           target_img_format: targetImgFormat
@@ -280,7 +319,7 @@ export default function App() {
           }
         }
 
-        const compressResponse = await axios.post('/api/compress', {
+        const compressResponse = await axios.post(`${getApiBaseUrl()}/api/compress`, {
           file_ids: backendIds,
           quality: Number(quality),
           archive_format: archiveFormat,
@@ -313,7 +352,7 @@ export default function App() {
 
   const handleDownload = () => {
     if (!compressedResult) return;
-    window.location.href = `/api/download/${compressedResult.download_id}`;
+    window.location.href = `${getApiBaseUrl()}/api/download/${compressedResult.download_id}`;
     setCompressedResult(null);
     setFiles([]);
   };
@@ -364,21 +403,51 @@ export default function App() {
             </div>
           </div>
           
-          {token && (
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 text-xs font-semibold bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-slate-300">
-                <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
-                <span className="truncate max-w-[120px]" title={userEmail}>{userEmail}</span>
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-xl hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                Sign Out
-              </button>
+          <div className="flex items-center gap-3">
+            {/* Server Status Pill */}
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold ${
+              serverStatus === 'online'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : serverStatus === 'offline'
+                ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                serverStatus === 'online'
+                  ? 'bg-emerald-500 animate-pulse'
+                  : serverStatus === 'offline'
+                  ? 'bg-rose-500'
+                  : 'bg-amber-500 animate-spin'
+              }`} />
+              <span className="hidden md:inline">Server: </span>
+              <span className="capitalize">{serverStatus}</span>
             </div>
-          )}
+
+            {/* Settings Button */}
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 transition-all cursor-pointer"
+              title="API Configuration"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {token && (
+              <>
+                <div className="hidden sm:flex items-center gap-2 text-xs font-semibold bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl text-slate-300">
+                  <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="truncate max-w-[120px]" title={userEmail}>{userEmail}</span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-xl hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all duration-300 cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Sign Out
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1021,6 +1090,69 @@ export default function App() {
         )}
 
       </main>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md glass rounded-3xl border border-slate-800/80 p-6 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 animate-out fade-out">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <h3 className="text-lg font-bold text-slate-100 mb-2 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-indigo-400" />
+              API Settings
+            </h3>
+            <p className="text-xs text-slate-400 mb-6">
+              Configure the remote FastAPI server URL for compression and format conversion endpoints.
+            </p>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  Backend API Base URL
+                </label>
+                <input
+                  type="text"
+                  placeholder="https://your-backend-api.onrender.com"
+                  value={backendUrl}
+                  onChange={(e) => setBackendUrl(e.target.value)}
+                  className="w-full bg-slate-900/60 border border-slate-800 rounded-xl py-2.5 px-4 text-xs focus:outline-none focus:border-indigo-500 text-slate-200 transition-colors"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.setItem('backend_api_url', backendUrl);
+                    setShowSettings(false);
+                  }}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-semibold text-xs transition-all cursor-pointer text-center"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBackendUrl('https://compressor-and-convertor-backend.onrender.com');
+                    localStorage.removeItem('backend_api_url');
+                    setShowSettings(false);
+                  }}
+                  className="py-2.5 px-4 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-all cursor-pointer text-center"
+                >
+                  Reset Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSettings(false)}
+                  className="py-2.5 px-4 rounded-xl bg-slate-900/40 border border-transparent hover:border-slate-800 text-slate-400 font-semibold text-xs transition-all cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
